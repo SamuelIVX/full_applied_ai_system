@@ -19,17 +19,54 @@ This simulation implements a content-based music recommender that scores each so
 
 Real-world recommenders like Spotify combine two strategies: **collaborative filtering** (finding users who share your taste and borrowing their discoveries) and **content-based filtering** (analyzing the actual audio attributes of songs). This simulation focuses on content-based filtering — the system never looks at what other users do; it only compares song attributes to your stated preferences. Each song receives a weighted score and the top `k` results are returned with an explanation.
 
-### Scoring Formula
+See [docs/flowchart.md](docs/flowchart.md) for a visual diagram of the full data pipeline.
+
+---
+
+### Algorithm Recipe
+
+The recommender runs in three stages:
+
+1. **Load** — `load_songs()` reads `data/songs.csv` and returns a list of song dicts.
+2. **Score** — for every song in the catalog, `score_song()` computes a single float (0.0–1.0) by comparing the song's attributes to the user's preferences using weighted proximity.
+3. **Rank** — `recommend_songs()` sorts all scored songs descending and returns the top `k` with an explanation string.
+
+#### Scoring Formula
 
 ```
 score = (0.40 × genre_match)
-      + (0.35 × mood_match)
-      + (0.25 × energy_proximity)
+      + (0.30 × mood_match)
+      + (0.15 × energy_proximity)
+      + (0.10 × valence_proximity)
+      + (0.05 × acousticness_proximity)
 
-where energy_proximity = 1 - |user_energy - song_energy|
+where:
+  genre_match   = 1.0 if song.genre == user.genre else 0.0
+  mood_match    = 1.0 if song.mood  == user.mood  else 0.0
+  proximity     = 1.0 - abs(user_value - song_value)   [for numeric features]
 ```
 
-Genre carries the most weight because it is the hardest stylistic boundary. Mood refines within that boundary. Energy fine-tunes among songs that already match both.
+#### Weight Rationale
+
+| Feature | Weight | Why this weight |
+|---|---|---|
+| `genre` | 0.40 | Hardest stylistic boundary — a folk fan and a metal fan share almost nothing |
+| `mood` | 0.30 | Strong signal within genre — "chill" vs "intense" is often make-or-break |
+| `energy` | 0.15 | Numeric fine-tuning within a matching mood and genre |
+| `valence` | 0.10 | Separates emotionally bright songs from dark/moody ones |
+| `acousticness` | 0.05 | Textural preference — the most situational and personal signal |
+
+Weights sum to **1.0**, so the final score is always interpretable as a percentage match (e.g. 0.95 = 95% fit).
+
+---
+
+### Expected Biases and Limitations
+
+- **Genre over-dominates low-catalog edge cases.** With only 20 songs, a user whose preferred genre appears only once (e.g. reggae) will almost always get that one song as #1 regardless of how poorly its mood or energy matches. In a real catalog of millions, this self-corrects.
+- **Mood categories are coarse.** "Chill" covers very different feelings across lofi, ambient, and jazz. Two songs can share the same mood label while sounding nothing alike — the system treats them as equally matching.
+- **No diversity enforcement.** The ranking rule always returns the closest matches, which means it may return 5 nearly identical songs. A real recommender injects variety to prevent filter bubbles.
+- **Genre and mood require exact string matches.** A user who types `"Hip-Hop"` instead of `"hip hop"` scores 0 on genre for every song, even Club Phantom. The system has no fuzzy matching.
+- **Numeric features assume linear preference.** `energy_proximity = 1 - |diff|` treats the relationship as a straight line. In reality, a user may tolerate energy slightly above their target more than energy below it — the formula cannot express that asymmetry.
 
 ---
 
@@ -58,8 +95,10 @@ Each `UserProfile` stores:
 |---|---|---|
 | `favorite_genre` | str | The genre the user most wants to hear |
 | `favorite_mood` | str | The mood or vibe the user is in |
-| `target_energy` | float 0–1 | Desired energy level (e.g. 0.8 = high-energy) |
-| `likes_acoustic` | bool | Whether the user prefers acoustic over electronic sounds |
+| `target_energy` | float 0–1 | Desired energy level (e.g. 0.85 = high-energy) |
+| `target_valence` | float 0–1 | Desired emotional tone (e.g. 0.80 = upbeat) |
+| `target_acousticness` | float 0–1 | Texture preference (e.g. 0.10 = electronic) |
+| `likes_acoustic` | bool | Convenience flag — true if acousticness target > 0.5 |
 
 ---
 
