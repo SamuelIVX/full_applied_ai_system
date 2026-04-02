@@ -11,23 +11,55 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+This simulation implements a content-based music recommender that scores each song in the catalog against a user's stated preferences and returns the top matches. Rather than relying on what other users listen to, it focuses entirely on song attributes — genre, mood, and energy — to find songs that fit a specific vibe. It is designed to be transparent: every recommendation includes a plain-language explanation of exactly why that song was chosen.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+Real-world recommenders like Spotify combine two strategies: **collaborative filtering** (finding users who share your taste and borrowing their discoveries) and **content-based filtering** (analyzing the actual audio attributes of songs). This simulation focuses on content-based filtering — the system never looks at what other users do; it only compares song attributes to your stated preferences. Each song receives a weighted score and the top `k` results are returned with an explanation.
 
-Some prompts to answer:
+### Scoring Formula
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+```
+score = (0.40 × genre_match)
+      + (0.35 × mood_match)
+      + (0.25 × energy_proximity)
 
-You can include a simple diagram or bullet list if helpful.
+where energy_proximity = 1 - |user_energy - song_energy|
+```
+
+Genre carries the most weight because it is the hardest stylistic boundary. Mood refines within that boundary. Energy fine-tunes among songs that already match both.
+
+---
+
+### Song Features
+
+Each `Song` object stores:
+
+| Feature | Type | Description |
+|---|---|---|
+| `id` | int | Unique identifier |
+| `title` | str | Song name |
+| `artist` | str | Artist name |
+| `genre` | str | e.g. pop, lofi, rock, metal, r&b, folk |
+| `mood` | str | e.g. happy, chill, intense, moody, focused, romantic |
+| `energy` | float 0–1 | Overall intensity (low = calm, high = driving) |
+| `tempo_bpm` | float | Beats per minute |
+| `valence` | float 0–1 | Emotional positivity (low = dark, high = upbeat) |
+| `danceability` | float 0–1 | Rhythmic feel and beat regularity |
+| `acousticness` | float 0–1 | Organic/acoustic vs electronic/produced |
+
+### UserProfile Features
+
+Each `UserProfile` stores:
+
+| Field | Type | Description |
+|---|---|---|
+| `favorite_genre` | str | The genre the user most wants to hear |
+| `favorite_mood` | str | The mood or vibe the user is in |
+| `target_energy` | float 0–1 | Desired energy level (e.g. 0.8 = high-energy) |
+| `likes_acoustic` | bool | Whether the user prefers acoustic over electronic sounds |
 
 ---
 
