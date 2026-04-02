@@ -139,4 +139,10 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Terminal Output
 
-![Terminal output showing top 5 recommendations for pop/happy profile](terminal_output.png)
+![Terminal output showing top 5 recommendations for pop/happy profile](docs/terminal_output.png)
+![Profile A — High-Energy Pop](docs/profile_a.png)
+![Profile B — Chill Lofi](docs/profile_b.png)
+![Profile C — Deep Intense Rock](docs/profile_c.png)
+![Profile D — Adversarial](docs/profile_d.png)
+![Profile E — Adversarial](docs/profile_e.png)
+![Profile F — Adversarial](docs/profile_f.png)

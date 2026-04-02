@@ -15,64 +15,93 @@ except ModuleNotFoundError:
     from src.recommender import load_songs, recommend_songs
 
 
-def main() -> None:
-    songs = load_songs("data/songs.csv") 
-
-    # --- User Profiles ---
-    # Each profile targets a distinct region of the song catalog.
-    # Swap which one is active to test different recommendation outcomes.
-
-    # Profile A: High-energy pop fan — expects Gym Hero, Neon Carnival, Sunrise City
-    user_prefs = {
+PROFILES = [
+    # --- Standard profiles ---
+    {
+        "name":         "A — High-Energy Pop",
         "genre":        "pop",
         "mood":         "happy",
-        "energy":       0.85,   # wants driving, high-energy tracks
-        "valence":      0.80,   # emotionally positive / upbeat
-        "acousticness": 0.10,   # prefers produced/electronic over acoustic
-    }
+        "energy":       0.85,
+        "valence":      0.80,
+        "acousticness": 0.10,
+    },
+    {
+        "name":         "B — Chill Lofi",
+        "genre":        "lofi",
+        "mood":         "chill",
+        "energy":       0.38,
+        "valence":      0.60,
+        "acousticness": 0.80,
+    },
+    {
+        "name":         "C — Deep Intense Rock",
+        "genre":        "metal",
+        "mood":         "intense",
+        "energy":       0.95,
+        "valence":      0.35,
+        "acousticness": 0.05,
+    },
+    # --- Adversarial / edge-case profiles ---
+    {
+        "name":         "D — Conflict: High Energy + Chill Mood",
+        # Energy says "pump it up" but mood says "calm down" — scorer must juggle both
+        "genre":        "lofi",
+        "mood":         "chill",
+        "energy":       0.92,
+        "valence":      0.55,
+        "acousticness": 0.70,
+    },
+    {
+        "name":         "E — Unknown Genre (no catalog match)",
+        # 'classical' doesn't exist in songs.csv — genre weight always 0
+        "genre":        "classical",
+        "mood":         "peaceful",
+        "energy":       0.30,
+        "valence":      0.70,
+        "acousticness": 0.90,
+    },
+    {
+        "name":         "F — Dead-Center Numeric (energy 0.5, valence 0.5)",
+        # Sits equidistant from every song — tests whether ties break sensibly
+        "genre":        "ambient",
+        "mood":         "focused",
+        "energy":       0.50,
+        "valence":      0.50,
+        "acousticness": 0.50,
+    },
+]
 
-    # Profile B: Late-night chill listener — expects lofi, ambient, jazz results
-    # user_prefs = {
-    #     "genre":        "lofi",
-    #     "mood":         "chill",
-    #     "energy":       0.38,   # low-energy background listening
-    #     "valence":      0.60,   # neutral-to-warm, not intense
-    #     "acousticness": 0.80,   # prefers organic, mellow textures
-    # }
 
-    # Profile C: Intense/dark listener — expects metal, rock, moody electronic
-    # user_prefs = {
-    #     "genre":        "metal",
-    #     "mood":         "intense",
-    #     "energy":       0.95,   # maximum energy
-    #     "valence":      0.35,   # low valence = dark, aggressive tone
-    #     "acousticness": 0.05,   # fully produced/distorted, nothing acoustic
-    # }
-
-    recommendations = recommend_songs(user_prefs, songs, k=5)
-
-    # --- Header ---
+def print_results(label: str, user_prefs: dict, recommendations: list) -> None:
+    """Print one profile's top-5 results in a formatted block."""
     profile_summary = (
         f"genre={user_prefs.get('genre','?')}  "
         f"mood={user_prefs.get('mood','?')}  "
         f"energy={user_prefs.get('energy','?')}"
     )
-    print("\n" + "=" * 60)
-    print("  MUSIC RECOMMENDER — Top 5 Results")
-    print(f"  Profile: {profile_summary}")
-    print("=" * 60)
-
-    # --- Results ---
+    print("\n" + "=" * 62)
+    print(f"  PROFILE {label}")
+    print(f"  {profile_summary}")
+    print("=" * 62)
     for rank, (song, score, explanation) in enumerate(recommendations, start=1):
-        bar = "#" * int(score * 20)   # 20-char ASCII progress bar
+        bar = "#" * int(score * 20)
         print(f"\n  #{rank}  {song['title']}  ({song['artist']})")
         print(f"       Score : {score:.2f}  [{bar:<20}]")
         print(f"       Genre : {song['genre']}   Mood: {song['mood']}")
         print("       Why   :")
         for reason in explanation.split(" | "):
             print(f"               - {reason}")
+    print()
 
-    print("\n" + "=" * 60 + "\n")
+
+def main() -> None:
+    songs = load_songs("data/songs.csv")
+
+    for profile in PROFILES:
+        label = profile["name"]
+        user_prefs = {k: v for k, v in profile.items() if k != "name"}
+        recommendations = recommend_songs(user_prefs, songs, k=5)
+        print_results(label, user_prefs, recommendations)
 
 
 if __name__ == "__main__":
