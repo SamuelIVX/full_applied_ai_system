@@ -89,42 +89,54 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     score = 0.0
     reasons = []
 
-    # --- Genre match (0.40) ---
+    # --- Weights ---
+    # EXPERIMENT: genre halved (0.40→0.20), energy doubled (0.15→0.30),
+    #             valence absorbs leftover +0.05 (0.10→0.15)
+    # Original:   genre=0.40, mood=0.30, energy=0.15, valence=0.10, acousticness=0.05
+    # Experiment: genre=0.20, mood=0.30, energy=0.30, valence=0.15, acousticness=0.05
+    # Sum check:  0.20 + 0.30 + 0.30 + 0.15 + 0.05 = 1.00 ✓
+    W_GENRE        = 0.20
+    W_MOOD         = 0.30
+    W_ENERGY       = 0.30
+    W_VALENCE      = 0.15
+    W_ACOUSTICNESS = 0.05
+
+    # --- Genre match ---
     if song["genre"] == user_prefs.get("genre", "").lower():
-        score += 0.40
-        reasons.append(f"genre match ({song['genre']}) +0.40")
+        score += W_GENRE
+        reasons.append(f"genre match ({song['genre']}) +{W_GENRE:.2f}")
     else:
         reasons.append(f"genre mismatch ({song['genre']} ≠ {user_prefs.get('genre', '?')}) +0.00")
 
-    # --- Mood match (0.30) ---
+    # --- Mood match ---
     if song["mood"] == user_prefs.get("mood", "").lower():
-        score += 0.30
-        reasons.append(f"mood match ({song['mood']}) +0.30")
+        score += W_MOOD
+        reasons.append(f"mood match ({song['mood']}) +{W_MOOD:.2f}")
     else:
         reasons.append(f"mood mismatch ({song['mood']} ≠ {user_prefs.get('mood', '?')}) +0.00")
 
-    # --- Energy proximity (0.15) ---
+    # --- Energy proximity ---
     if "energy" in user_prefs:
         energy_proximity = 1.0 - abs(user_prefs["energy"] - song["energy"])
-        contribution = round(energy_proximity * 0.15, 3)
+        contribution = round(energy_proximity * W_ENERGY, 3)
         score += contribution
         reasons.append(
             f"energy {song['energy']:.2f} vs target {user_prefs['energy']:.2f} → +{contribution:.3f}"
         )
 
-    # --- Valence proximity (0.10) ---
+    # --- Valence proximity ---
     if "valence" in user_prefs:
         valence_proximity = 1.0 - abs(user_prefs["valence"] - song["valence"])
-        contribution = round(valence_proximity * 0.10, 3)
+        contribution = round(valence_proximity * W_VALENCE, 3)
         score += contribution
         reasons.append(
             f"valence {song['valence']:.2f} vs target {user_prefs['valence']:.2f} → +{contribution:.3f}"
         )
 
-    # --- Acousticness proximity (0.05) ---
+    # --- Acousticness proximity ---
     if "acousticness" in user_prefs:
         acousticness_proximity = 1.0 - abs(user_prefs["acousticness"] - song["acousticness"])
-        contribution = round(acousticness_proximity * 0.05, 3)
+        contribution = round(acousticness_proximity * W_ACOUSTICNESS, 3)
         score += contribution
         reasons.append(
             f"acousticness {song['acousticness']:.2f} vs target {user_prefs['acousticness']:.2f} → +{contribution:.3f}"
