@@ -38,6 +38,7 @@ class Recommender:
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
+        """Return the top-k Song objects ranked by score for the given UserProfile."""
         user_prefs = {
             "genre":  user.favorite_genre.lower(),
             "mood":   user.favorite_mood.lower(),
@@ -51,6 +52,7 @@ class Recommender:
         return [song_map[sid] for sid in scored_ids]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
+        """Return a pipe-delimited string describing why song was recommended for user."""
         user_prefs = {
             "genre":  user.favorite_genre.lower(),
             "mood":   user.favorite_mood.lower(),
@@ -60,10 +62,7 @@ class Recommender:
         return " | ".join(reasons)
 
 def load_songs(csv_path: str) -> List[Dict]:
-    """
-    Loads songs from a CSV file.
-    Required by src/main.py
-    """
+    """Read songs.csv and return a list of dicts with correctly typed numeric fields."""
     import csv
 
     songs = []
@@ -86,20 +85,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
-    """
-    Scores a single song against user preferences.
-
-    Returns:
-        (score, reasons) where score is 0.0–1.0 and reasons is a list
-        of strings explaining each component's contribution.
-
-    Weights (sum to 1.0):
-        genre        0.40
-        mood         0.30
-        energy       0.15
-        valence      0.10
-        acousticness 0.05
-    """
+    """Score one song against user_prefs (0.0–1.0) and return (score, reason_strings)."""
     score = 0.0
     reasons = []
 
@@ -148,15 +134,7 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """
-    Scores every song in the catalog, ranks them highest-to-lowest,
-    and returns the top k results.
-
-    Uses sorted() instead of .sort() so the original songs list is
-    never mutated — the caller's data stays unchanged.
-
-    Return format: list of (song_dict, score, explanation_string)
-    """
+    """Score all songs, sort highest-to-lowest, and return the top-k as (song, score, explanation) tuples."""
     # Score every song and pack results into (song, score, explanation) tuples
     scored = [
         (song, score, " | ".join(reasons))
