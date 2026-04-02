@@ -42,7 +42,27 @@ A third limitation is the absence of a diversity floor. All five recommendations
 
 ## 7. Evaluation
 
-Six user profiles were tested: three standard (high-energy pop, chill lofi, deep intense metal) and three adversarial edge cases (conflicting energy + mood, unknown genre, dead-center numeric values). For each profile, the top 5 results were inspected against musical intuition. The most revealing test was Profile E (genre = "classical", which does not exist in the catalog) — the system lost 20 points on every song and the top result scored only 0.59, barely ahead of the field. A weight-shift experiment was also run: halving genre weight (0.20) and doubling energy weight (0.30) improved rankings for near-genre matches like "dance pop" but allowed high-energy songs from unrelated genres to surface in low-energy profiles, confirming that the original genre weight is load-bearing even if too blunt.
+Six user profiles were tested against all 20 songs. Results were evaluated by asking: does the #1 result match what a real listener would expect, and does the gap between matched and unmatched songs feel proportionate?
+
+**Profile A — High-Energy Pop (genre=pop, mood=happy, energy=0.85)**
+Result: Sunrise City scored 0.98 at #1. This felt correct — it is the only song that matches both genre and mood simultaneously. What was surprising was Gym Hero ranking #2 at 0.68 despite having the wrong mood ("intense" instead of "happy"). It kept its position purely because of the pop genre match. A real listener asking for happy pop would likely find Gym Hero jarring.
+
+**Profile B — Chill Lofi (genre=lofi, mood=chill, energy=0.38)**
+Result: Library Rain and Midnight Coding scored 0.99 and 0.98 at #1 and #2. This was the cleanest result across all tests — both songs are genuinely correct recommendations. What was surprising was Heartstring Theory (country/melancholic) appearing at #5 with zero genre or mood match, kept there solely by its high acousticness score. A chill lofi listener would not expect a country song in their list.
+
+**Profile C — Deep Intense Rock (genre=metal, mood=intense, energy=0.95)**
+Result: Iron Cathedral scored 0.99 at #1. This result is correct, but it reveals a fragility — if Iron Cathedral were removed from the catalog, the #1 result would be Storm Runner (rock, not metal) at 0.58, which feels like a significant drop in relevance. The system is one song away from failing this profile entirely.
+
+**Profile D — Adversarial: Conflicting Energy + Mood (genre=lofi, mood=chill, energy=0.92)**
+Result: Midnight Coding scored 0.85 at #1. The system resolved the contradiction by siding with genre and mood (0.50 combined weight) over energy (0.30 weight). The lofi songs won even though they have energy around 0.40 — far from the target of 0.92. This shows the system's priority order clearly, but it also means a user who genuinely wants high-energy chill music would receive very low-energy results with no explanation of the tradeoff.
+
+**Profile E — Adversarial: Unknown Genre ("classical")**
+Result: River Hymn scored 0.59 at #1, with songs 2–5 clustered at 0.45–0.49. The system degraded gracefully — it found the closest match (peaceful folk) — but the scores compressed. There was no signal to the user that their genre preference was completely unrepresented. A real system would surface a "no catalog match" warning.
+
+**Profile F — Adversarial: Dead-Center Numeric (genre=ambient, mood=focused, energy=0.50)**
+Result: Quantum Drift scored 0.89 at #1, demonstrating that the categorical features (genre + mood) remain decisive even when numeric features are perfectly neutral. This confirmed that the weight design is internally consistent — the system never relies solely on numeric proximity to break ties in unexpected ways.
+
+**Weight-shift experiment:** Halving genre weight (0.40→0.20) and doubling energy weight (0.15→0.30) caused Neon Carnival and Rooftop Lights to rise above Gym Hero in Profile A, which was more musically intuitive. However, it allowed Storm Runner to climb into the chill lofi profile at #5 — a musically incorrect result. The experiment confirmed that genre weight is load-bearing and cannot be cut in half without introducing genre-category noise.
 
 ---
 
