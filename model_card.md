@@ -156,3 +156,67 @@ When the user's preferred genre does not exist in the catalog, surface a clear m
 instead of silently returning degraded results. Something like: "No [genre] songs found —
 showing closest alternatives." This would make the system honest about its limits and
 help users understand why the results feel off.
+
+---
+
+## 9. Personal Reflection
+
+**What was my biggest learning moment?**
+
+The biggest learning moment came during the adversarial testing phase, specifically
+Profile E — the "classical" genre that doesn't exist in the catalog. I expected the
+system to fail loudly or crash. Instead it returned results quietly, gave River Hymn
+a score of 0.59, and moved on as if everything was fine. Nothing in the output told
+the user their preference was completely unrecognized. That moment made me realize
+that a broken recommendation and a working one can look almost identical from the
+outside. The system was confident even when it had nothing useful to offer. That's
+not just a bug in my code — it's a property of how real recommenders behave at scale,
+and it's part of why auditing AI systems matters.
+
+**How did using AI tools help me, and when did I need to double-check them?**
+
+AI tools were genuinely useful for three things: researching how real platforms like
+Spotify combine collaborative and content-based filtering, generating the initial
+expanded song catalog with realistic feature values, and helping me think through the
+weight rationale before writing any code. The research summaries gave me vocabulary
+(valence, acousticness, cold-start problem) that I then used to frame my own design
+decisions.
+
+Where I had to slow down and verify: the AI suggested a scoring formula early on that
+looked clean but didn't guarantee the weights summed to 1.0. If I had used it without
+checking the math, my scores would have been uninterpretable — a song could have scored
+above 1.0 or the "percentage match" framing would have been wrong. The lesson is that
+AI-generated math and logic needs to be tested, not just read. I ran the weight-shift
+experiment specifically because I wanted to see what the formula actually did, not just
+what it looked like on paper.
+
+**What surprised me about how simple algorithms can still "feel" like recommendations?**
+
+I was surprised by how much the output *felt* intentional even though the logic is
+just arithmetic. When Sunrise City scored 0.99 for the pop/happy profile, it felt like
+the system "understood" the request — even though all it did was add up five numbers.
+The explanation strings helped a lot here: seeing "genre match (pop) +0.20 | mood match
+(happy) +0.30" made the result feel reasoned rather than random.
+
+What broke the illusion was the filter bubble. After running all six profiles, I noticed
+the system returned almost identical songs for similar profiles with no variety. A real
+listening experience has surprise in it — you discover something you didn't know you
+wanted. My system has no mechanism for that. It can feel like a good recommender for
+the first result and feel repetitive by the fifth. That gap between "feels right" and
+"actually useful over time" is something real platforms invest enormous effort to close.
+
+**What would I try next if I extended this project?**
+
+The change I'm most curious about is adding a genre similarity graph — a small lookup
+table that says rock is 70% similar to metal, indie pop is 80% similar to pop, and
+reggae is 20% similar to metal. Instead of binary match/no-match, songs would earn
+partial genre credit based on how close their genre is to the user's preference. I
+think this single change would fix the biggest problems I found: the winner-take-all
+monopoly, the "dance pop" ≠ "pop" penalty, and the cold-start degradation for
+near-missing genres.
+
+Beyond that, I'd want to add implicit feedback — letting the user skip or replay a
+song and having those actions update their profile automatically. That would move the
+system from content-based filtering toward the hybrid approach that Spotify actually
+uses, and it would be interesting to see how quickly a profile built from behavior
+diverges from one built from stated preferences.
