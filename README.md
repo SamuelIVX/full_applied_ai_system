@@ -1,5 +1,9 @@
 # 🎧 VibeFinder 2.0 — Conversational Music Recommender
 
+## Video Walkthrough
+
+[Watch the Loom demo →](https://www.loom.com/share/b8004ae1693545f4a0bdf2095ececce4)
+
 ## Project Summary (Original)
 
 VibeFinder began as a content-based music recommendation simulation that scores songs against user preferences and returns ranked results with plain-language explanations. It implements a weighted scoring algorithm using genre, mood, and audio features (energy, valence, acousticness) to find songs matching a specific "vibe."
