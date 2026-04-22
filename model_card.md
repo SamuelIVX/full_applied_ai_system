@@ -4,7 +4,7 @@
 
 ## 1. Model Name
 
-**VibeFinder 1.0**
+**VibeFinder 2.0** (Conversational Music Recommender)
 
 ---
 
@@ -50,6 +50,28 @@ to its score — for example: "genre match (pop) +0.20 | mood match (happy) +0.3
 
 ---
 
+## 4.1 VibeFinder 2.0 Conversational Interface
+
+VibeFinder 2.0 adds a conversational interface built with Streamlit that allows users to describe their music preferences in natural language instead of manually selecting sliders.
+
+**Key New Features:**
+
+- **Natural Language Parser** (`src/nl_parser.py`): Extracts structured preferences from free text using keyword matching. Maps terms like "upbeat" → energy 0.7-0.9, "chill" → energy 0.1-0.4, and handles genre synonyms ("dance pop" → "dance pop", "indie" → "indie pop").
+
+- **Conversation State Manager** (`src/state.py`): Tracks conversation history, current user profile, and preference confidence. Asks clarifying questions when profile is underspecified (e.g., "What genre or style of music are you in the mood for?").
+
+- **Genre Similarity Lookup** (`src/genre_similarity.py`): Provides partial credit for near-genre matches. Rock scores 0.7 against metal, dance pop scores 0.85 against pop — fixing the exact string matching bias.
+
+- **Confidence Scoring**: Computes confidence based on how many attributes are specified (1-5), whether genre exists in catalog, and whether mood is recognized. Returns scores with color coding: green (≥0.7), orange (≥0.4), red (<0.4).
+
+- **Edge Case Warnings**: Detects and surfaces warnings for unknown genres, extreme values outside catalog range, and conflicting preferences (e.g., high energy + chill mood).
+
+- **Session Persistence**: Saves conversation state to `.vibefinder_state.json` to preserve history between app refreshes.
+
+- **Demo Profiles**: Quick-start buttons for common use cases: Morning Run, Late Night Coding, Gym Session.
+
+---
+
 ## 5. Observed Behavior / Biases
 
 **Bias 1 — Winner-take-all genre problem.**
@@ -77,6 +99,24 @@ When a user's preferred genre does not exist in the catalog (tested with "classi
 the system loses 20 points on every song and returns results that are only marginally
 better than random. There is no warning, no fallback message, and no indication to
 the user that their preference was unrecognized.
+
+**Bias 5 (VibeFinder 2.0) — NL parser ambiguity.**
+The rule-based natural language parser uses keyword matching which can misinterpret ambiguous phrases. "I want something energetic" correctly maps to high energy, but context-dependent requests like "music for studying" rely on hardcoded context mappings that may not cover all use cases. Manual slider override is available for expert users.
+
+---
+
+## 5.1 VibeFinder 2.0 Conversational Evaluation
+
+The same six test profiles (A-F from main.py) were run through the new conversational interface to verify backward compatibility:
+
+- **Profile A**: Natural language "I want happy upbeat pop music" correctly extracts genre=pop, mood=happy, energy=high → Same results as CLI version
+- **Profile B**: "something chill for relaxing" → Extracts chill mood, low energy → Same lofi recommendations
+- **Profile C**: "dark intense metal for the gym" → Extracts genre=metal, mood=intense → Same Iron Cathedral ranking
+- **Profile D**: "high energy but chill vibes" → Warns about conflicting preferences ("high energy + chill mood may conflict")
+- **Profile E**: "I want classical music" → Detects unknown genre, shows warning, returns closest alternatives (River Hymn/ambient tracks)
+- **Profile F**: "something balanced" → Returns medium-energy results with appropriate confidence score
+
+All six original profiles produce equivalent or improved results in the conversational interface.
 
 ---
 
@@ -132,8 +172,9 @@ students learning about weighted scoring, feature matching, and algorithm bias.
 - Making decisions about what music is "good" in any objective sense. The scores are
   similarity measures, not quality ratings.
 - Any context where fairness across musical cultures matters. The catalog heavily
-  favors Western electronic and indie music and would systematically underserve
-  listeners from other musical traditions.
+  favors Western electronic and indie music and systematically underserves
+  listeners from other musical traditions. (MITIGATED in 2.0: genre similarity provides partial credit for near-genres, and warnings tell users when preferences are unrecognized.)
+- **VibeFinder 2.0 specific**: Users expecting sophisticated semantic understanding. The NL parser is rule-based, not an LLM. Complex or sarcastic requests may be misinterpreted.
 
 ---
 
@@ -160,6 +201,22 @@ help users understand why the results feel off.
 ---
 
 ## 9. Personal Reflection
+
+**Design Decisions for VibeFinder 2.0**
+
+1. **Why rule-based over LLM?** Started with keyword matching because:
+   - Simple and predictable behavior — no API costs or rate limits
+   - Clear debugging path — every extraction can be traced to specific keywords
+   - Fast iteration — adding new phrases is just adding dictionary entries
+   - Would upgrade to lightweight LLM if user requests more sophisticated parsing
+
+2. **Why session state persistence?** Users expected their conversation to survive page refreshes. Saving to `.vibefinder_state.json` provides continuity without requiring a database.
+
+3. **Why confidence scoring?** The clarification agent only triggers when confidence is low. This prevents the system from asking too many questions too early, following the principle of least surprise.
+
+4. **Why warn vs. fail silently?** From Profile E testing in 1.0, learned that unknown genres should produce explicit warnings, not quietly degraded results.
+
+---
 
 **What was my biggest learning moment?**
 

@@ -13,3 +13,6 @@ venv/
 
 # Pytest cache
 .pytest_cache/
+
+# App state (user-specific)
+.vibefinder_state.json

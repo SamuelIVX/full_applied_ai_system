@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from src.recommender import Song, UserProfile, Recommender
 
 def make_small_recommender() -> Recommender:
