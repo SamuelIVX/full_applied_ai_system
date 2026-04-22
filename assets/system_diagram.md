@@ -3,7 +3,7 @@
 ```mermaid
 flowchart TD
     subgraph INPUT["User Input Layer"]
-        A1([Natural Language\n"upbeat pop music"]) --> A2
+        A1([Natural Language\n'upbeat pop music']) --> A2
         A3([Quick Start Button\n☀️ Morning Run]) --> A2
         A4([Manual Sliders\nSidebar Override]) --> A2
     end
