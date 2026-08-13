@@ -1,12 +1,8 @@
-"""
-Command line runner for the Music Recommender Simulation.
+"""CLI runner for the VibeFinder 2.0 music recommender.
 
-This file helps you quickly run and test your recommender.
-
-You will implement the functions in recommender.py:
-- load_songs
-- score_song
-- recommend_songs
+Runs six hardcoded preference profiles (A–F, including adversarial edge cases)
+against ``data/songs.csv`` and prints ranked results. Must be run from the
+repo root so the relative catalog path and import fallback resolve correctly.
 """
 
 try:
@@ -73,7 +69,14 @@ PROFILES = [
 
 
 def print_results(label: str, user_prefs: dict, recommendations: list) -> None:
-    """Print one profile's top-5 results in a formatted block."""
+    """Print one profile's top-5 results in a formatted block.
+
+    Args:
+        label: Profile display name (e.g. ``"A — High-Energy Pop"``).
+        user_prefs: Preference dict used for scoring (no ``name`` key).
+        recommendations: ``(song, score, explanation)`` tuples from
+            ``recommend_songs``.
+    """
     profile_summary = (
         f"genre={user_prefs.get('genre','?')}  "
         f"mood={user_prefs.get('mood','?')}  "
@@ -95,6 +98,7 @@ def print_results(label: str, user_prefs: dict, recommendations: list) -> None:
 
 
 def main() -> None:
+    """Load the catalog and print recommendations for every hardcoded profile."""
     songs = load_songs("data/songs.csv")
 
     for profile in PROFILES:

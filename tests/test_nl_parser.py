@@ -1,3 +1,9 @@
+"""Unit tests for rule-based NL preference parsing in ``nl_parser``.
+
+Covers energy/mood/genre/valence/acousticness keyword extraction and empty-input
+fallback behavior for ``parse_preferences``.
+"""
+
 import pytest
 import sys
 import os

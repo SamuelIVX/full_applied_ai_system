@@ -1,3 +1,10 @@
+"""Streamlit UI and orchestration for VibeFinder 2.0.
+
+Loads the song catalog, persists conversation state to
+``.vibefinder_state.json``, parses chat / quick-start / manual preferences,
+and renders ranked recommendations with edge-case warnings.
+"""
+
 import streamlit as st
 import json
 import os
@@ -14,12 +21,22 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "songs.csv")
 
 
 def save_state(state: ConversationState):
+    """Write conversation state to ``.vibefinder_state.json``.
+
+    Args:
+        state: Current ConversationState to persist.
+    """
     state_dict = state.to_dict()
     with open(CONFIG_PATH, "w") as f:
         json.dump(state_dict, f)
 
 
 def load_saved_state() -> Optional[Dict]:
+    """Load persisted conversation JSON if present and valid.
+
+    Returns:
+        Parsed state dict, or ``None`` if missing / corrupt.
+    """
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r") as f:
@@ -30,6 +47,16 @@ def load_saved_state() -> Optional[Dict]:
 
 
 def check_edge_cases(profile: Dict, available_genres: List[str], energy_range: Tuple[float, float]) -> List[str]:
+    """Build user-facing warnings for unknown genre, out-of-range energy, or conflicts.
+
+    Args:
+        profile: Active preference dict (genre/mood/energy/…).
+        available_genres: Genres present in the loaded catalog.
+        energy_range: ``(min_energy, max_energy)`` from the catalog.
+
+    Returns:
+        List of warning strings (may be empty).
+    """
     warnings = []
     
     genre = profile.get("genre")
@@ -56,6 +83,14 @@ def check_edge_cases(profile: Dict, available_genres: List[str], energy_range: T
 
 
 def get_confidence_color(score: float) -> str:
+    """Map confidence score to a Streamlit-friendly color name.
+
+    Args:
+        score: Preference confidence in [0, 1].
+
+    Returns:
+        ``"green"``, ``"orange"``, or ``"red"``.
+    """
     if score >= 0.7:
         return "green"
     elif score >= 0.4:
@@ -65,6 +100,14 @@ def get_confidence_color(score: float) -> str:
 
 
 def get_confidence_label(score: float) -> str:
+    """Map confidence score to a High/Medium/Low label.
+
+    Args:
+        score: Preference confidence in [0, 1].
+
+    Returns:
+        ``"High"``, ``"Medium"``, or ``"Low"``.
+    """
     if score >= 0.7:
         return "High"
     elif score >= 0.4:
@@ -74,6 +117,7 @@ def get_confidence_label(score: float) -> str:
 
 
 def main():
+    """Run the Streamlit app: sidebar controls, chat, and recommendations."""
     st.set_page_config(
         page_title="VibeFinder 2.0",
         page_icon="🎧",

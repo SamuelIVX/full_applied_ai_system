@@ -1,9 +1,16 @@
+"""Backward-compat tests for the OOP ``Recommender`` wrapper.
+
+Verifies ranked ``recommend`` output and non-empty ``explain_recommendation``
+strings against a tiny in-memory catalog.
+"""
+
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from src.recommender import Song, UserProfile, Recommender
 
 def make_small_recommender() -> Recommender:
+    """Build a two-song Recommender for ordering / explain smoke tests."""
     songs = [
         Song(
             id=1,
