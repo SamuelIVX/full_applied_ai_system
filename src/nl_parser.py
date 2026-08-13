@@ -1,3 +1,10 @@
+"""Rule-based natural-language preference parser for VibeFinder 2.0.
+
+Maps free-text phrases to genre, mood, energy, valence, and acousticness via
+keyword dictionaries. Longest-phrase-first matching applies only to genre and
+energy; mood, valence, and acousticness use dict insertion order (first hit).
+"""
+
 from typing import Dict, Tuple, Optional
 
 
@@ -71,6 +78,23 @@ ACOUSTIC_KEYWORDS = {
 
 
 def parse_preferences(text: str) -> Dict:
+    """Extract preference fields from free-text user input.
+
+    Scans for genre (longest synonym first), mood, energy (longest phrase
+    first → midpoint of keyword range), valence, and acousticness. If nothing
+    matches, returns ``{"raw_text": text}``.
+
+    Args:
+        text: Natural-language preference description.
+
+    Returns:
+        Sparse dict of recognized fields (genre, mood, energy, valence,
+        acousticness) or ``raw_text`` when empty.
+
+    Example:
+        >>> parse_preferences("upbeat pop for a morning run")
+        {'genre': 'pop', 'mood': 'happy', 'energy': 0.8, ...}
+    """
     text_lower = text.lower()
     result = {}
     
@@ -123,5 +147,14 @@ def parse_preferences(text: str) -> Dict:
 
 
 def extract_any_preference(text: str, pref_type: str) -> Optional[any]:
+    """Return a single preference field from parsed text, if present.
+
+    Args:
+        text: Natural-language preference description.
+        pref_type: Key to look up (e.g. ``"genre"``, ``"energy"``).
+
+    Returns:
+        The parsed value for ``pref_type``, or ``None`` if absent.
+    """
     parsed = parse_preferences(text)
     return parsed.get(pref_type)

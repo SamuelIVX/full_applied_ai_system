@@ -1,11 +1,18 @@
+"""Core content-based music recommender for VibeFinder 2.0.
+
+Scores catalog songs against user preferences with a weighted heuristic
+(genre/mood exact match + energy/valence/acousticness proximity). Provides
+both functional helpers and a thin OOP wrapper required by the coursework tests.
+"""
+
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
 @dataclass
 class Song:
-    """
-    Represents a song and its attributes.
-    Required by tests/test_recommender.py
+    """Catalog song with numeric audio features used by scoring.
+
+    Required by tests/test_recommender.py.
     """
     id: int
     title: str
@@ -20,9 +27,9 @@ class Song:
 
 @dataclass
 class UserProfile:
-    """
-    Represents a user's taste preferences.
-    Required by tests/test_recommender.py
+    """User taste preferences for the OOP Recommender API.
+
+    Required by tests/test_recommender.py.
     """
     favorite_genre: str
     favorite_mood: str
@@ -30,15 +37,32 @@ class UserProfile:
     likes_acoustic: bool
 
 class Recommender:
-    """
-    OOP implementation of the recommendation logic.
-    Required by tests/test_recommender.py
+    """OOP wrapper around recommend_songs / score_song.
+
+    Required by tests/test_recommender.py.
     """
     def __init__(self, songs: List[Song]):
+        """Store the in-memory song catalog.
+
+        Args:
+            songs: Song objects to rank; converted to dicts for scoring.
+        """
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        """Return the top-k Song objects ranked by score for the given UserProfile."""
+        """Return the top-k Song objects ranked by score for the given UserProfile.
+
+        Args:
+            user: Taste profile (genre, mood, target energy).
+            k: Maximum number of songs to return.
+
+        Returns:
+            Song objects in descending score order (length ≤ k).
+
+        Example:
+            >>> rec.recommend(UserProfile("pop", "happy", 0.8, False), k=2)
+            [<Song id=1 ...>, ...]
+        """
         user_prefs = {
             "genre":  user.favorite_genre.lower(),
             "mood":   user.favorite_mood.lower(),
@@ -52,7 +76,15 @@ class Recommender:
         return [song_map[sid] for sid in scored_ids]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        """Return a pipe-delimited string describing why song was recommended for user."""
+        """Return a pipe-delimited string describing why song was recommended for user.
+
+        Args:
+            user: Taste profile used for scoring.
+            song: Catalog song to explain.
+
+        Returns:
+            Human-readable reason fragments joined by `` | ``.
+        """
         user_prefs = {
             "genre":  user.favorite_genre.lower(),
             "mood":   user.favorite_mood.lower(),
@@ -62,7 +94,18 @@ class Recommender:
         return " | ".join(reasons)
 
 def load_songs(csv_path: str) -> List[Dict]:
-    """Read songs.csv and return a list of dicts with correctly typed numeric fields."""
+    """Read songs.csv and return a list of dicts with correctly typed numeric fields.
+
+    Args:
+        csv_path: Path to the catalog CSV (stdlib ``csv``, not pandas).
+
+    Returns:
+        One dict per row with lowered genre/mood and float numeric fields.
+
+    Raises:
+        FileNotFoundError: If ``csv_path`` does not exist.
+        KeyError / ValueError: If a required column is missing or not numeric.
+    """
     import csv
 
     songs = []
@@ -85,7 +128,25 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
-    """Score one song against user_prefs (0.0–1.0) and return (score, reason_strings)."""
+    """Score one song against user_prefs (0.0–1.0) and return (score, reason_strings).
+
+    Genre and mood use exact string equality. Energy, valence, and acousticness
+    use proximity ``1 - |Δ|`` when those keys are present in ``user_prefs``.
+    Genre similarity from ``genre_similarity`` is not applied here.
+
+    Args:
+        user_prefs: Preference dict (keys may include genre, mood, energy,
+            valence, acousticness).
+        song: Catalog song dict with the same feature keys.
+
+    Returns:
+        ``(rounded_score, reasons)`` where reasons are human-readable fragments.
+
+    Example:
+        >>> score, reasons = score_song({"genre": "pop", "energy": 0.8}, song)
+        >>> 0.0 <= score <= 1.0
+        True
+    """
     score = 0.0
     reasons = []
 
@@ -146,7 +207,16 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """Score all songs, sort highest-to-lowest, and return the top-k as (song, score, explanation) tuples."""
+    """Score all songs, sort highest-to-lowest, and return the top-k as (song, score, explanation) tuples.
+
+    Args:
+        user_prefs: Preference dict passed through to ``score_song``.
+        songs: Full catalog as dicts (typically from ``load_songs``).
+        k: Maximum number of results to return.
+
+    Returns:
+        Up to ``k`` tuples of ``(song_dict, score, pipe_joined_explanation)``.
+    """
     # Score every song and pack results into (song, score, explanation) tuples
     scored = [
         (song, score, " | ".join(reasons))

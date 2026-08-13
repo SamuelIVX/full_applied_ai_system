@@ -1,3 +1,9 @@
+"""Hand-built genre-to-genre similarity matrix for VibeFinder 2.0.
+
+Used for UI captions and unknown-genre warning text only. Ranking in
+``score_song`` uses exact genre equality and does not call these helpers.
+"""
+
 from typing import Dict, Optional
 
 
@@ -66,6 +72,22 @@ GENRE_SIMILARITY: Dict[str, Dict[str, float]] = {
 
 
 def get_genre_similarity(genre1: str, genre2: str) -> float:
+    """Return similarity in [0.0, 1.0] between two genre labels.
+
+    Looks up ``GENRE_SIMILARITY`` (either direction). Unknown pairs that appear
+    as neighbors elsewhere get a weak 0.15 fallback; otherwise 0.0.
+
+    Args:
+        genre1: First genre label (case-insensitive).
+        genre2: Second genre label (case-insensitive).
+
+    Returns:
+        Similarity score where 1.0 is exact match.
+
+    Example:
+        >>> get_genre_similarity("pop", "dance pop")
+        0.85
+    """
     if genre1 == genre2:
         return 1.0
     
@@ -86,6 +108,16 @@ def get_genre_similarity(genre1: str, genre2: str) -> float:
 
 
 def find_similar_genres(genre: str, threshold: float = 0.3) -> list:
+    """List genres similar to ``genre`` at or above ``threshold``, best first.
+
+    Args:
+        genre: Seed genre label (case-insensitive).
+        threshold: Minimum similarity to include (exclusive of self).
+
+    Returns:
+        List of ``(genre_name, score)`` tuples sorted descending by score.
+        Empty if the seed genre is unknown.
+    """
     genre_lower = genre.lower()
     similar = []
     
