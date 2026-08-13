@@ -35,6 +35,12 @@ class ConversationState:
             attributes: Preference fields from the NL parser (or manual UI).
                 ``None`` values are ignored. Energy is averaged with any
                 existing energy value.
+
+        Example:
+            >>> state.update_profile({"genre": "pop", "energy": 0.8})
+            >>> state.update_profile({"energy": 0.4})
+            >>> state.current_profile["energy"]
+            0.6
         """
         for key, value in attributes.items():
             if key in self.current_profile and value is not None:
@@ -75,6 +81,13 @@ class ConversationState:
 
         Returns:
             Clarification prompt string, or ``None`` if none needed.
+
+        Example:
+            >>> state.preference_confidence = 0.2
+            >>> state.current_profile["genre"] is None
+            True
+            >>> state.get_clarification_question().startswith("What genre")
+            True
         """
         if self.preference_confidence >= 0.6:
             return None
@@ -146,6 +159,13 @@ class ConversationState:
 
         Returns:
             Hydrated ConversationState ready for the Streamlit session.
+
+        Example:
+            >>> restored = ConversationState.from_dict(
+            ...     state.to_dict(), available_genres=["pop"], catalog_energy_range=(0.2, 0.9),
+            ...     catalog_moods=["happy"])
+            >>> restored.preference_confidence == state.preference_confidence
+            True
         """
         state = cls(
             available_genres=available_genres,

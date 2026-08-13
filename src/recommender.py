@@ -84,6 +84,10 @@ class Recommender:
 
         Returns:
             Human-readable reason fragments joined by `` | ``.
+
+        Example:
+            >>> rec.explain_recommendation(user, song)
+            'genre match (pop) +0.20 | mood match (happy) +0.30 | ...'
         """
         user_prefs = {
             "genre":  user.favorite_genre.lower(),
@@ -105,6 +109,12 @@ def load_songs(csv_path: str) -> List[Dict]:
     Raises:
         FileNotFoundError: If ``csv_path`` does not exist.
         KeyError / ValueError: If a required column is missing or not numeric.
+        OSError: If the file cannot be opened or read.
+
+    Example:
+        >>> songs = load_songs("data/songs.csv")
+        >>> songs[0]["genre"]
+        'pop'
     """
     import csv
 
@@ -216,6 +226,11 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
 
     Returns:
         Up to ``k`` tuples of ``(song_dict, score, pipe_joined_explanation)``.
+
+    Example:
+        >>> top = recommend_songs({"genre": "pop", "mood": "happy", "energy": 0.8}, songs, k=1)
+        >>> len(top) == 1 and top[0][1] >= 0.0
+        True
     """
     # Score every song and pack results into (song, score, explanation) tuples
     scored = [

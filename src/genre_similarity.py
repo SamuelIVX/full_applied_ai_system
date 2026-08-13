@@ -119,6 +119,10 @@ def find_similar_genres(genre: str, threshold: float = 0.3) -> list:
     Returns:
         List of ``(genre_name, score)`` tuples sorted descending by score.
         Empty if the seed genre is unknown.
+
+    Example:
+        >>> find_similar_genres("pop", threshold=0.7)[:2]
+        [('dance pop', 0.85), ('indie pop', 0.8)]
     """
     genre_lower = genre.lower()
     similar = []
