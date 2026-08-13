@@ -1,8 +1,9 @@
 """Streamlit UI and orchestration for VibeFinder 2.0.
 
 Loads the song catalog, persists conversation state to
-``.vibefinder_state.json``, parses chat / quick-start / manual preferences,
-and renders ranked recommendations with edge-case warnings.
+``.vibefinder_state.json``, parses chat and quick-start text, collects manual
+preferences from Streamlit controls, and renders ranked recommendations with
+edge-case warnings.
 """
 
 import streamlit as st
@@ -32,10 +33,13 @@ def save_state(state: ConversationState):
 
 
 def load_saved_state() -> Optional[Dict]:
-    """Load persisted conversation JSON if present and valid.
+    """Load persisted conversation JSON if present and syntactically valid.
+
+    Does not validate schema shape; the caller should treat a successful load
+    as a state dict (as written by ``save_state``).
 
     Returns:
-        Parsed state dict, or ``None`` if missing / corrupt.
+        Parsed JSON value on success, or ``None`` if missing / corrupt.
     """
     if os.path.exists(CONFIG_PATH):
         try:
@@ -47,7 +51,10 @@ def load_saved_state() -> Optional[Dict]:
 
 
 def check_edge_cases(profile: Dict, available_genres: List[str], energy_range: Tuple[float, float]) -> List[str]:
-    """Build user-facing warnings for unknown genre, out-of-range energy, or conflicts.
+    """Build user-facing warnings for unknown genre, energy, or conflicts.
+
+    Energy is treated as out of range only when it exceeds the catalog
+    ``energy_range`` bounds by more than 0.15.
 
     Args:
         profile: Active preference dict (genre/mood/energy/…).
