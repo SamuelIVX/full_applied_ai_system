@@ -98,7 +98,14 @@ def print_results(label: str, user_prefs: dict, recommendations: list) -> None:
 
 
 def main() -> None:
-    """Load the catalog and print recommendations for every hardcoded profile."""
+    """Load the catalog and print recommendations for every hardcoded profile.
+
+    Must be run from the repo root so ``data/songs.csv`` resolves.
+
+    Raises:
+        FileNotFoundError: If ``data/songs.csv`` is missing.
+        KeyError / ValueError / OSError: Propagated from ``load_songs``.
+    """
     songs = load_songs("data/songs.csv")
 
     for profile in PROFILES:

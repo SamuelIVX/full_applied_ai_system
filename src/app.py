@@ -26,6 +26,10 @@ def save_state(state: ConversationState):
 
     Args:
         state: Current ConversationState to persist.
+
+    Raises:
+        OSError: If the state file cannot be created or written.
+        TypeError: If ``state.to_dict()`` yields a non-JSON-serializable value.
     """
     state_dict = state.to_dict()
     with open(CONFIG_PATH, "w") as f:
@@ -36,7 +40,8 @@ def load_saved_state() -> Optional[Dict]:
     """Load persisted conversation JSON if present and syntactically valid.
 
     Does not validate schema shape; the caller should treat a successful load
-    as a state dict (as written by ``save_state``).
+    as a state dict (as written by ``save_state``). Missing files, corrupt
+    JSON, and I/O errors all return ``None`` (never raised).
 
     Returns:
         Parsed JSON value on success, or ``None`` if missing / corrupt.
@@ -63,6 +68,10 @@ def check_edge_cases(profile: Dict, available_genres: List[str], energy_range: T
 
     Returns:
         List of warning strings (may be empty).
+
+    Example:
+        >>> check_edge_cases({"genre": "classical"}, ["pop", "lofi"], (0.2, 0.9))
+        ["No exact matches for 'classical' — showing closest alternatives"]
     """
     warnings = []
     

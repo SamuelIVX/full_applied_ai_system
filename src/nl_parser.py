@@ -155,6 +155,10 @@ def extract_any_preference(text: str, pref_type: str) -> Optional[any]:
 
     Returns:
         The parsed value for ``pref_type``, or ``None`` if absent.
+
+    Example:
+        >>> extract_any_preference("chill lofi beats", "genre")
+        'lofi'
     """
     parsed = parse_preferences(text)
     return parsed.get(pref_type)
