@@ -81,15 +81,15 @@ def parse_preferences(text: str) -> Dict:
     """Extract preference fields from free-text user input.
 
     Scans for genre (longest synonym first), mood, energy (longest phrase
-    first → midpoint of keyword range), valence, and acousticness. If nothing
-    matches, returns ``{"raw_text": text}``.
+    first → midpoint of keyword range), valence, and acousticness. If no
+    preference field matches, returns ``{"raw_text": text}``.
 
     Args:
         text: Natural-language preference description.
 
     Returns:
         Sparse dict of recognized fields (genre, mood, energy, valence,
-        acousticness) or ``raw_text`` when empty.
+        acousticness) or ``raw_text`` when no preference matches.
 
     Example:
         >>> parse_preferences("upbeat pop for a morning run")

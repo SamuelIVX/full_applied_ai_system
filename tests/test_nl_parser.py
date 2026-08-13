@@ -1,6 +1,6 @@
 """Unit tests for rule-based NL preference parsing in ``nl_parser``.
 
-Covers energy/mood/genre/valence/acousticness keyword extraction and empty-input
+Covers energy/mood/genre/valence/acousticness keyword extraction and no-match
 fallback behavior for ``parse_preferences``.
 """
 

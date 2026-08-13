@@ -1,6 +1,6 @@
 """CLI runner for the VibeFinder 2.0 music recommender.
 
-Runs six hardcoded preference profiles (A–F, including adversarial edge cases)
+Runs six hardcoded preference profiles (A through F, including adversarial edge cases)
 against ``data/songs.csv`` and prints ranked results. Must be run from the
 repo root so the relative catalog path and import fallback resolve correctly.
 """
@@ -69,7 +69,7 @@ PROFILES = [
 
 
 def print_results(label: str, user_prefs: dict, recommendations: list) -> None:
-    """Print one profile's top-5 results in a formatted block.
+    """Print the supplied recommendations for one profile in a formatted block.
 
     Args:
         label: Profile display name (e.g. ``"A — High-Energy Pop"``).

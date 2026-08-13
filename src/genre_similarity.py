@@ -74,8 +74,10 @@ GENRE_SIMILARITY: Dict[str, Dict[str, float]] = {
 def get_genre_similarity(genre1: str, genre2: str) -> float:
     """Return similarity in [0.0, 1.0] between two genre labels.
 
-    Looks up ``GENRE_SIMILARITY`` (either direction). Unknown pairs that appear
-    as neighbors elsewhere get a weak 0.15 fallback; otherwise 0.0.
+    Checks ``genre1``'s row first and returns immediately when that key exists
+    (including 0.0 for a missing neighbor). Falls back to ``genre2``'s row only
+    when ``genre1`` is absent. Unknown pairs that appear as neighbors elsewhere
+    get a weak 0.15 fallback; otherwise 0.0.
 
     Args:
         genre1: First genre label (case-insensitive).

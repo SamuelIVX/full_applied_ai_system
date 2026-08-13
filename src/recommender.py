@@ -45,7 +45,7 @@ class Recommender:
         """Store the in-memory song catalog.
 
         Args:
-            songs: Song objects to rank; converted to dicts for scoring.
+            songs: Song objects to keep in the in-memory catalog.
         """
         self.songs = songs
 
@@ -128,7 +128,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
-    """Score one song against user_prefs (0.0–1.0) and return (score, reason_strings).
+    """Score one song against user_prefs (0.0 to 1.0) and return (score, reason_strings).
 
     Genre and mood use exact string equality. Energy, valence, and acousticness
     use proximity ``1 - |Δ|`` when those keys are present in ``user_prefs``.
