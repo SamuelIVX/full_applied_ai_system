@@ -77,7 +77,7 @@ def test_score_song_reason_recovery_genre_match():
         "genre": "pop", "mood": "happy", "energy": 0.8,
         "tempo_bpm": 120, "valence": 0.9, "danceability": 0.8, "acousticness": 0.2,
     }
-    score, reasons = score_song({"genre": "pop", "mood": "happy", "energy": 0.8}, song)
+    _score, reasons = score_song({"genre": "pop", "mood": "happy", "energy": 0.8}, song)
     assert any("genre match (pop)" in r for r in reasons)
     assert any("mood match (happy)" in r for r in reasons)
 
@@ -88,7 +88,7 @@ def test_score_song_reason_recovery_energy_proximity():
         "genre": "pop", "mood": "happy", "energy": 0.85,
         "tempo_bpm": 120, "valence": 0.9, "danceability": 0.8, "acousticness": 0.2,
     }
-    score, reasons = score_song({"genre": "pop", "mood": "happy", "energy": 0.8}, song)
+    _score, reasons = score_song({"genre": "pop", "mood": "happy", "energy": 0.8}, song)
     assert any("energy" in r and "vs target" in r for r in reasons)
 
 

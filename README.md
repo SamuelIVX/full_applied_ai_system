@@ -199,17 +199,11 @@ Confidence: Low (10%)
 
 **Rationale:** Users expect their conversation to persist across page refreshes. This adds continuity without requiring a database.
 
-### 4. Genre Similarity
+### 4. Session Persistence
 
-**Decision:** Partial credit (not binary matching)
+**Decision:** Save to `.vibefinder_state.json`
 
-| Genre Pair | Similarity |
-|---|---|
-| pop ↔ dance pop | 0.85 |
-| rock ↔ metal | 0.70 |
-| lofi ↔ jazz | 0.55 |
-
-**Original problem:** "dance pop" scored 0 against "pop" preference — even though they're similar. Genre similarity fixes this.
+**Rationale:** Users expect their conversation to persist across page refreshes. This adds continuity without requiring a database.
 
 ---
 
@@ -273,7 +267,6 @@ Confidence: Low (10%)
 | `src/app.py` | Streamlit conversational interface |
 | `src/nl_parser.py` | Natural language preference parser |
 | `src/state.py` | Conversation state manager |
-| `src/genre_similarity.py` | Genre similarity lookup |
 | `tests/test_nl_parser.py` | 20 parser unit tests |
 | `assets/system_diagram.md` | Visual architecture diagram |
 | `.vibefinder_state.json` | Session persistence (runtime) |
