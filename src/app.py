@@ -13,7 +13,6 @@ from typing import List, Dict, Tuple, Optional
 
 from state import ConversationState
 from nl_parser import parse_preferences
-from genre_similarity import get_genre_similarity, find_similar_genres
 from recommender import load_songs, recommend_songs, score_song
 
 
@@ -77,12 +76,7 @@ def check_edge_cases(profile: Dict, available_genres: List[str], energy_range: T
     
     genre = profile.get("genre")
     if genre and genre not in available_genres:
-        similar = find_similar_genres(genre, threshold=0.3)
-        if similar:
-            similar_names = ", ".join([s[0] for s in similar[:3]])
-            warnings.append(f"No exact matches for '{genre}' — showing similar genres: {similar_names}")
-        else:
-            warnings.append(f"No exact matches for '{genre}' — showing closest alternatives")
+        warnings.append(f"No exact matches for '{genre}' — showing closest alternatives")
     
     energy = profile.get("energy")
     if energy:
@@ -325,11 +319,6 @@ def main():
                 
                 with st.expander("Why this?", expanded=False):
                     st.caption(explanation)
-                    
-                    if profile_to_use.get("genre"):
-                        sim = get_genre_similarity(song['genre'], profile_to_use['genre'])
-                        if sim < 1.0 and sim > 0.0:
-                            st.caption(f"Genre proximity: {sim:.0%} similar to your preference")
 
 
 if __name__ == "__main__":

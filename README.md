@@ -53,8 +53,6 @@ Conversation State Manager (src/state.py) — Track profile + confidence
     ↓
 [Confidence < 60%?] → Clarification Loop OR Continue
     ↓
-Genre Similarity Lookup (src/genre_similarity.py) — Partial credit for near-genres
-    ↓
 Recommender Engine (src/recommender.py) — Score songs
     ↓
 Edge Case Detector (src/app.py) — Generate warnings
@@ -68,7 +66,6 @@ Streamlit UI — Display results with confidence scores
 |---|---|---|
 | NL Parser | `src/nl_parser.py` | Rule-based keyword extraction |
 | Conversation State | `src/state.py` | Profile tracking + confidence scoring |
-| Genre Similarity | `src/genre_similarity.py` | Partial credit for near-genres |
 | Recommender | `src/recommender.py` | Core scoring algorithm (unchanged from v1.0) |
 | Streamlit App | `src/app.py` | Web interface + edge case detection |
 
@@ -180,10 +177,12 @@ Confidence: Low (10%)
 | Decision | Rationale | Trade-off |
 |---|---|---|
 | Keyword matching | Simple, predictable, debuggable | Can't handle complex semantics |
-| Longer phrases prioritized | "dance pop" > "pop" | Context-dependent phrases need manual mapping |
+| Longer phrases prioritized | "dance pop" > "pop" (genre + energy only) | Context-dependent phrases need manual mapping |
 | Manual slider override | Expert user control | Adds UI complexity |
 
 **Why not use an LLM?** This is a teaching tool — rule-based is transparent and shows exactly how extraction works. An LLM would add cost and complexity without improving the core demonstration.
+
+> **Longest-phrase-first note:** The parser sorts genre and energy keywords by length descending so multi-word phrases like "dance pop" or "morning run" win over single-word matches. Mood, valence, and acousticness use dict insertion order instead.
 
 ### 2. Confidence Scoring
 
@@ -283,8 +282,14 @@ Confidence: Low (10%)
 |---|---|
 | `src/recommender.py` | Core scoring engine |
 | `src/main.py` | CLI runner |
-| `data/songs.csv` | 20-song catalog |
+| `data/songs.csv` | 20-song custom catalog (not from Kaggle) |
 | `tests/test_recommender.py` | Original tests |
+
+---
+
+## Data Source
+
+The song catalog is a custom 20-song CSV (`data/songs.csv`) created for this project. It is not sourced from Kaggle or any external dataset.
 
 ---
 
