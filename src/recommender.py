@@ -142,7 +142,7 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     Genre and mood use exact string equality. Energy, valence, and acousticness
     use proximity ``1 - |Δ|`` when those keys are present in ``user_prefs``.
-    Genre similarity from ``genre_similarity`` is not applied here.
+    Genre similarity is not applied here; ranking uses exact genre equality.
 
     Args:
         user_prefs: Preference dict (keys may include genre, mood, energy,

@@ -16,8 +16,6 @@ flowchart TD
         C1 -->|No| C2[Clarification Agent\nAsk follow-up question]
         C2 --> A2
         C1 -->|Yes| D[Recommender Engine]
-        
-        E[Genre Similarity Lookup] -.->|partial credit| D
     end
 
     subgraph STORAGE["Data Layer"]
@@ -62,7 +60,6 @@ flowchart TD
 |---|---|---|
 | **NL Parser** | `src/nl_parser.py` | Rule-based keyword matching to extract structured preferences from free text |
 | **Conversation State** | `src/state.py` | Tracks history, profile, confidence; triggers clarification questions |
-| **Genre Similarity** | `src/genre_similarity.py` | Provides partial credit (0.0–1.0) for near-genre matches |
 | **Recommender** | `src/recommender.py` | Scores songs using weighted algorithm (genre 0.20, mood 0.30, energy 0.30, valence 0.15, acousticness 0.05) |
 | **Edge Case Detector** | `src/app.py` | Warns about unknown genres, extreme values, conflicting preferences |
 
